@@ -12,7 +12,6 @@ type Writer struct {
 
 func NewKafkaWriter() *Writer {
 	writer := &kafkago.Writer{
-		// Not the best way but for the lesson purpose
 		Addr:  kafkago.TCP("localhost:9092"),
 		Topic: "user_full_info",
 	}
@@ -36,6 +35,7 @@ func (k *Writer) WriteMessages(ctx context.Context, messages chan kafkago.Messag
 
 			select {
 			case <-ctx.Done():
+				return ctx.Err()
 			case messageCommitChan <- m:
 			}
 		}

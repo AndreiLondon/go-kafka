@@ -14,7 +14,6 @@ type Reader struct {
 
 func NewKafkaReader() *Reader {
 	reader := kafkago.NewReader(kafkago.ReaderConfig{
-		// Bad practice to put hardcoded credantials
 		Brokers: []string{"localhost:9092"},
 		Topic:   "user_ids",
 		GroupID: "group",
@@ -36,7 +35,7 @@ func (k *Reader) FetchMessage(ctx context.Context, messages chan<- kafkago.Messa
 		case <-ctx.Done():
 			return ctx.Err()
 		case messages <- message:
-			log.Printf("message fetched and sent to a channel: %v \n", string(message.Value))
+			log.Printf("Message fetched and sent to channel: %v\n", string(message.Value))
 		}
 	}
 }
@@ -45,12 +44,13 @@ func (k *Reader) CommitMessages(ctx context.Context, messageCommitChan <-chan ka
 	for {
 		select {
 		case <-ctx.Done():
+			return ctx.Err()
 		case msg := <-messageCommitChan:
 			err := k.Reader.CommitMessages(ctx, msg)
 			if err != nil {
 				return errors.Wrap(err, "Reader.CommitMessages")
 			}
-			log.Printf("committed an msg: %v \n", string(msg.Value))
+			log.Printf("Committed message: %v\n", string(msg.Value))
 		}
 	}
 }
